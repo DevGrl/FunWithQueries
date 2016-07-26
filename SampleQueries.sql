@@ -44,3 +44,58 @@ select count(*) employeeCount, e.managerid
   from employee e
   group by e.managerid
 */
+
+--7) Generate a list of managers with the department they belong to and the number
+--of reports (DepartmentName, EmployeeID, FirstName, LastName, NumberOfReports
+/*select d.DepartmentName, e1.EmployeeID, e1.FirstName, e1.LastName
+  from employee e1
+  join department d on e1.departmentid = d.departmentid
+  where employeeid in (select managerid from employee)
+  group by d.departmentname, e1.employeeid, e1.firstname, e1.lastname
+  
+
+select count(*) NumberOfReports, e2.managerid 
+  from employee e2
+  where e2.managerid in (select managerid from employee)
+  group by e2.managerid
+  
+--inefficient solution but it works  
+select t1.DepartmentName, t1.EmployeeID, t1.FirstName, t1.LastName, x.NumberOfReports
+from (select d.DepartmentName, e1.EmployeeID, e1.FirstName, e1.LastName
+   from employee e1
+   join department d on e1.departmentid = d.departmentid
+   where employeeid in (select managerid from employee)
+   group by d.departmentname, e1.employeeid, e1.firstname, e1.lastname) t1
+join (select count(*) NumberOfReports, e2.managerid 
+   from employee e2
+   where e2.managerid in (select managerid from employee)
+   group by e2.managerid) x on x.managerid = t1.EmployeeID
+   
+--slightly improved
+  SELECT x.DepartmentName, x.EmployeeID, x.FirstName, x.LastName, y.NumberOfReports
+  FROM 
+	(
+	  SELECT d.DepartmentName, e.EmployeeID, e.FirstName, e.LastName
+		  FROM employee e
+		  JOIN department d ON e.departmentid = d.departmentid
+		  WHERE employeeid in (SELECT managerid FROM employee)
+	) x
+  JOIN
+	(
+	  SELECT ManagerID , count(employeeid) NumberOfReports
+		FROM employee
+		GROUP BY managerid
+	) y
+  ON
+	y.ManagerID = x.EmployeeID
+	*/
+  --DO THIS. More efficient
+  select ManagerID , count(employeeid) NumberOfReports
+  from employee
+  group by managerid
+  order by managerid
+  --INSTEAD OF THIS. Less efficient
+  select count(*) NumberOfReports, managerid 
+  from employee
+  where managerid in (select managerid from employee)
+  group by managerid
